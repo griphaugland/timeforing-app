@@ -12,6 +12,12 @@ import {
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog";
 import { Button } from "./ui/button";
 import { Case } from "./pages/Home";
+import { ChevronDown } from "lucide-react";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "./ui/collapsible";
 
 interface Props {
   cases: Case[];
@@ -127,42 +133,62 @@ const TableOverview = ({ cases }: Props) => {
       <Dialog open={detailsDialogOpen} onOpenChange={setDetailsDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Related Cases</DialogTitle>
+            <DialogTitle className="text-3xl font-bold">
+              All Sessions
+            </DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             {relatedCases.length > 0 ? (
               <>
-                <p>
-                  <strong>Total Time for All Related Cases:</strong>{" "}
-                  {sumTotalTime(relatedCases)}
-                </p>
-                <hr />
+                <div className="text-xl flex w-full justify-between">
+                  <p>Total Time for All Sessions:</p>{" "}
+                  <p className="font-bold">{sumTotalTime(relatedCases)}</p>
+                </div>
+                <hr className="my-4 border-gray-300" />
                 {relatedCases.map((caseItem, index) => (
-                  <div key={index}>
-                    <p>
-                      <strong>Case Name:</strong> {caseItem.caseName}
-                    </p>
-                    <p>
-                      <strong>Start Time:</strong> {caseItem.startTime}
-                    </p>
-                    <p>
-                      <strong>End Time:</strong> {caseItem.endTime}
-                    </p>
-                    <p>
-                      <strong>Total Time:</strong> {caseItem.totalTime}
-                    </p>
-                    <p>
-                      <strong>Activity:</strong> {caseItem.activity}
-                    </p>
-                    <hr />
-                  </div>
+                  <Collapsible
+                    key={index}
+                    className="bg-gray-100 rounded-md shadow-sm transition-all delay-100"
+                  >
+                    <CollapsibleTrigger className="flex justify-between items-center p-4 w-full bg-white rounded-md cursor-pointer hover:bg-gray-50">
+                      <span className="text-lg font-medium">
+                        {caseItem.activity}
+                      </span>
+                      <span className="ml-2 text-gray-500">
+                        <ChevronDown />
+                      </span>
+                    </CollapsibleTrigger>
+                    <CollapsibleContent className="p-4 transition-all delay-100">
+                      <p>
+                        <strong>Case Name:</strong> {caseItem.caseName}
+                      </p>
+                      <p>
+                        <strong>Start Time:</strong> {caseItem.startTime}
+                      </p>
+                      <p>
+                        <strong>End Time:</strong> {caseItem.endTime}
+                      </p>
+                      <p>
+                        <strong>Total Time:</strong> {caseItem.totalTime}
+                      </p>
+                      <p>
+                        <strong>Activity:</strong> {caseItem.activity}
+                      </p>
+                    </CollapsibleContent>
+                  </Collapsible>
                 ))}
               </>
             ) : (
-              <p>No related cases found.</p>
+              <p className="text-gray-500">No related cases found.</p>
             )}
           </div>
-          <Button onClick={() => setDetailsDialogOpen(false)}>Close</Button>
+          <Button
+            className="mt-4"
+            variant="default"
+            onClick={() => setDetailsDialogOpen(false)}
+          >
+            Close
+          </Button>
         </DialogContent>
       </Dialog>
     </>

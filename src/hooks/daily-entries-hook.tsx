@@ -1,6 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
-import { Case } from "@/app/page";
+import { Case } from "../components/pages/Home";
 
 // Interface for storing daily cases
 interface DailyEntries {

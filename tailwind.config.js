@@ -5,9 +5,9 @@ export default {
   theme: {
     extend: {
       colors: {
-        background: "#FFFFFF",
+        background: "#FCFCFC",
         foreground: "#585858",
-        content: "#F5F5F5",
+        content: "#FFFFFF",
         action: "1F1F1F",
         subText: "#7F7F7F",
         greyText: "#A1A1A1",
