@@ -48,7 +48,10 @@ export default function PreviousEntries() {
           </div>
         </PageSlots.Top>
         <PageSlots.Left>
-          <TableOverview cases={dateCases} />
+          <TableOverview
+            cases={dateCases}
+            refresh={() => console.log("Deleted successfully")}
+          />
         </PageSlots.Left>
         <PageSlots.Right>
           <div className="space-y-4">

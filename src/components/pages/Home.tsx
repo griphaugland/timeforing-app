@@ -6,7 +6,7 @@ import { TableOverview } from "../TableOverview";
 import { useDailyEntries } from "../../hooks/daily-entries-hook";
 import CaseDialog from "../CaseDialog";
 import Wrapper from "../navigation/wrapper";
-import { CalendarIcon } from "lucide-react";
+import { CalendarIcon, RotateCcw } from "lucide-react";
 import { Button } from "../ui/button";
 
 export interface Case {
@@ -19,7 +19,7 @@ export interface Case {
 }
 
 export default function HomePage() {
-  const { allCases, setAllCases } = useDailyEntries([]);
+  const { allCases, setAllCases, refreshCases } = useDailyEntries([]);
   const navigate = useNavigate();
   const [currentCaseId, setCurrentCaseId] = useState<string | null>(null);
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
@@ -42,7 +42,7 @@ export default function HomePage() {
     });
   };
 
-  const generateId = () => Date.now().toString();
+  const generateId = () => crypto.randomUUID();
 
   const handleCaseSubmit = (caseName: string, activity: string) => {
     const newCaseId = generateId();
@@ -111,6 +111,10 @@ export default function HomePage() {
     () => allCases.find((c: Case) => c.id === currentCaseId),
     [allCases, currentCaseId]
   );
+  const handleRefresh = () => {
+    if (allCases.length === 0) return;
+    refreshCases(); // Trigger the refresh function
+  };
 
   useEffect(() => {
     const updateTimer = () => {
@@ -134,10 +138,15 @@ export default function HomePage() {
     <Wrapper>
       <PageSlots>
         <PageSlots.Top>
-          <h1 className="text-4xl text-black font-bold">{today}</h1>
+          <div className="flex justify-between items-center">
+            <h1 className="text-4xl text-black font-bold">{today}</h1>
+            <Button variant="greyText" onClick={handleRefresh}>
+              <RotateCcw />
+            </Button>
+          </div>
         </PageSlots.Top>
         <PageSlots.Left>
-          <TableOverview cases={allCases} />
+          <TableOverview cases={allCases} refresh={refreshCases} />
         </PageSlots.Left>
         <PageSlots.Right>
           <ActionOverview

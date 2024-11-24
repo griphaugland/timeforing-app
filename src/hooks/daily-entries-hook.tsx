@@ -46,19 +46,116 @@ export function useDailyEntries(initialCases: Case[]) {
     return initialCases;
   });
 
-  // Effect to update localStorage whenever cases change
   useEffect(() => {
     const todayKey = getTodayKey();
-
-    // Update the entries for today
     const updatedEntries = {
       ...dailyEntries,
       [todayKey]: allCases,
     };
 
-    setDailyEntries(updatedEntries);
-    saveEntriesToLocalStorage(updatedEntries);
+    // Debounce the localStorage update
+    const timeoutId = setTimeout(() => {
+      setDailyEntries(updatedEntries);
+      saveEntriesToLocalStorage(updatedEntries);
+    }, 100);
+
+    return () => clearTimeout(timeoutId);
   }, [allCases]);
+
+  const deleteCase = (id: string) => {
+    // Load entries from localStorage
+    const storedEntries = loadEntriesFromLocalStorage();
+
+    // Clone the entries object to avoid mutating state
+    const updatedEntries = { ...storedEntries };
+
+    // Loop through all date keys and remove the case with the given ID
+    Object.keys(updatedEntries).forEach((dateKey) => {
+      updatedEntries[dateKey] = updatedEntries[dateKey].filter(
+        (caseItem: Case) => caseItem.id !== id
+      );
+    });
+
+    // Save updated entries to localStorage
+    saveEntriesToLocalStorage(updatedEntries);
+
+    // Update state
+    setDailyEntries(updatedEntries);
+
+    // Optional: If you need to update `allCases`, recompute from `updatedEntries`
+    const allCases = Object.values(updatedEntries).flat();
+    setAllCases(allCases);
+  };
+
+  const editCase = (updatedCase: Case) => {
+    // Load entries from localStorage
+    const storedEntries = loadEntriesFromLocalStorage();
+
+    // Clone the entries object to avoid mutating state
+    const updatedEntries = { ...storedEntries };
+
+    // Loop through all date keys and update the case with the same ID
+    Object.keys(updatedEntries).forEach((dateKey) => {
+      updatedEntries[dateKey] = updatedEntries[dateKey].map((caseItem: Case) =>
+        caseItem.id === updatedCase.id ? updatedCase : caseItem
+      );
+    });
+
+    // Save updated entries to localStorage
+    saveEntriesToLocalStorage(updatedEntries);
+
+    // Update state
+    setDailyEntries(updatedEntries);
+
+    // Optional: If you need to update `allCases`, recompute from `updatedEntries`
+    const allCases = Object.values(updatedEntries).flat();
+    setAllCases(allCases);
+  };
+
+  const refreshCases = () => {
+    const todayKey = getTodayKey();
+    const updatedEntries = loadEntriesFromLocalStorage();
+    const todayCases = updatedEntries[todayKey];
+    setAllCases(todayCases);
+  };
+
+  const refreshCasesForDate = (date: string) => {
+    const casesForDate = dailyEntries[date] || [];
+    setAllCases(casesForDate);
+  };
+
+  const calculateTotalTime = (startTime: string, endTime: string) => {
+    if (startTime === "--:--" || endTime === "--:--") {
+      return "--:--:--";
+    }
+    const [startHours, startMinutes, startSeconds] = startTime
+      .split(":")
+      .map(Number);
+    const [endHours, endMinutes, endSeconds] = endTime.split(":").map(Number);
+
+    const startDate = new Date();
+    const endDate = new Date();
+
+    startDate.setHours(startHours, startMinutes, startSeconds || 0);
+    endDate.setHours(endHours, endMinutes, endSeconds || 0);
+
+    const diffInMilliseconds = endDate.getTime() - startDate.getTime();
+
+    if (diffInMilliseconds < 0) {
+      return "00:00:00"; // Handle cases where the end time is earlier than the start time
+    }
+
+    const totalSeconds = Math.floor(diffInMilliseconds / 1000);
+    const hours = Math.floor(totalSeconds / 3600)
+      .toString()
+      .padStart(2, "0");
+    const minutes = Math.floor((totalSeconds % 3600) / 60)
+      .toString()
+      .padStart(2, "0");
+    const seconds = (totalSeconds % 60).toString().padStart(2, "0");
+
+    return `${hours}:${minutes}:${seconds}`;
+  };
 
   // Function to reset today's entries
   const setNewDay = () => {
@@ -74,7 +171,6 @@ export function useDailyEntries(initialCases: Case[]) {
     // Reset to initial cases
     setAllCases(initialCases);
   };
-
   // Function to get entries for a specific date
   const getEntriesForDate = (date: string) => {
     return dailyEntries[date] || [];
@@ -93,6 +189,11 @@ export function useDailyEntries(initialCases: Case[]) {
     setNewDay,
     getEntriesForDate,
     getAvailableDates,
+    refreshCasesForDate,
+    refreshCases,
+    deleteCase,
+    calculateTotalTime,
+    editCase,
     dailyEntries,
   };
 }

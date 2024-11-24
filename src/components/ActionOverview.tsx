@@ -1,6 +1,6 @@
 import { Card, CardContent } from "./ui/card";
 import { Button } from "./ui/button";
-import { Play, Pause } from "lucide-react";
+import { Play, Square } from "lucide-react";
 import { Case } from "./pages/Home";
 
 interface Props {
@@ -54,16 +54,16 @@ function ActionOverview({ currentCase, currentTime, onStart, onStop }: Props) {
       {isActive ? (
         <Button
           onClick={onStop}
-          className="bg-white hover:bg-black/5 rounded-xl p-4 px-2 h-[80px] text-black text-3xl mt-auto font-extrabold"
+          className="bg-red-700 hover:bg-red-500 rounded-xl p-4 px-2 h-[80px] text-white text-3xl mt-auto font-extrabold"
         >
-          <Pause />
+          <Square fill="white" />
         </Button>
       ) : (
         <Button
           onClick={onStart}
-          className="bg-black rounded-xl p-4 px-2 h-[80px] text-white mt-auto font-extrabold"
+          className="bg-green-700 hover:bg-green-600 rounded-xl p-4 px-2 h-[80px] text-white mt-auto font-extrabold"
         >
-          <Play />
+          <Play fill="white" />
         </Button>
       )}
     </Card>
