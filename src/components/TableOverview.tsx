@@ -70,8 +70,6 @@ const TableOverview = ({ cases, refresh }: Props) => {
     }, {});
   };
 
-  const groupedCases = groupCasesByActivity(cases);
-
   // Converts HH:mm:ss to total seconds
   const timeToSeconds = (time: string) => {
     const [hours, minutes, seconds] = time.split(":").map(Number);
@@ -270,7 +268,9 @@ const TableOverview = ({ cases, refresh }: Props) => {
                 </Table>
 
                 <ScrollArea className="h-[320px]">
-                  {Object.entries(groupedCases).map(([activity, cases]) => (
+                  {Object.entries(
+                    groupCasesByActivity(relatedCases) // Use relatedCases here
+                  ).map(([activity, cases]) => (
                     <Collapsible key={activity} className="border-b-2">
                       <CollapsibleTrigger className="flex justify-between items-center w-full p-4 hover:bg-gray-200 ">
                         <span className="font-medium">{activity}</span>
