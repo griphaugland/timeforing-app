@@ -29,6 +29,7 @@ import { Input } from "./ui/input";
 
 interface Props {
   cases: Case[];
+  currentTime: number;
   refresh: () => void;
 }
 
@@ -42,7 +43,7 @@ const formatTextToShowDotsWithTextOnHover = (text: string) => {
   );
 };
 
-const TableOverview = ({ cases, refresh }: Props) => {
+const TableOverview = ({ cases, refresh, currentTime }: Props) => {
   const minimumRows = 8;
   const emptyRows = Math.max(0, minimumRows - cases.length);
   const { deleteCase, editCase, calculateTotalTime } = useDailyEntries(cases);
@@ -50,6 +51,12 @@ const TableOverview = ({ cases, refresh }: Props) => {
   const [detailsDialogOpen, setDetailsDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [caseToDelete, setCaseToDelete] = useState<Case | null>(null);
+  const [currentTimeObj, setCurrentTimeObj] = useState({
+    hours: "00",
+    minutes: "00",
+    seconds: "00",
+    millis: "000",
+  });
 
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [caseToEdit, setCaseToEdit] = useState<Case | null>(null);
@@ -77,24 +84,34 @@ const TableOverview = ({ cases, refresh }: Props) => {
   };
 
   // Converts total seconds to HH:mm:ss format
-  const secondsToTime = (totalSeconds: number) => {
-    const hours = Math.floor(totalSeconds / 3600);
-    const minutes = Math.floor((totalSeconds % 3600) / 60);
-    const seconds = totalSeconds % 60;
-
-    return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(
-      2,
-      "0"
-    )}:${String(seconds).padStart(2, "0")}`;
+  const secondsToCurrentTimeObj = (totalSeconds: number) => {
+    const currentTimeObj = {
+      hours: Math.floor(totalSeconds / 3600000)
+        .toString()
+        .padStart(2, "0"),
+      minutes: Math.floor((totalSeconds % 3600000) / 60000)
+        .toString()
+        .padStart(2, "0"),
+      seconds: Math.floor((totalSeconds % 60000) / 1000)
+        .toString()
+        .padStart(2, "0"),
+      millis: (totalSeconds % 1000).toString().padStart(3, "0"),
+    };
+    return currentTimeObj;
   };
 
   // Calculate the total time for all cases with the same caseName
-  const calculateTotalTimeForCaseName = (caseName: string, cases: Case[]) => {
+  const calculateTotalSecondsForCaseName = (
+    caseName: string,
+    cases: Case[]
+  ) => {
     const totalSeconds = cases
       .filter((caseItem) => caseItem.caseName === caseName)
       .reduce((acc, caseItem) => acc + timeToSeconds(caseItem.totalTime), 0);
-
-    return secondsToTime(totalSeconds);
+    const gatheredCaseSeconds = totalSeconds
+      ? currentTime + totalSeconds
+      : currentTime;
+    return gatheredCaseSeconds;
   };
 
   const handleSaveEdit = () => {
@@ -232,10 +249,15 @@ const TableOverview = ({ cases, refresh }: Props) => {
             <div className="mt-2 text-2xl flex justify-between">
               <p>Total time spent on this case: </p>
               <span className="font-bold">
-                {calculateTotalTimeForCaseName(
-                  relatedCases[0]?.caseName,
-                  relatedCases
-                )}
+                <div className="text-foreground text-2xl font-extrabold max-w-[100%] flex gap-1">
+                  <span className="number-block">{currentTimeObj.hours}</span>
+                  <span>:</span>
+                  <span className="number-block">{currentTimeObj.minutes}</span>
+                  <span>:</span>
+                  <span className="number-block">{currentTimeObj.seconds}</span>
+                  <span>:</span>
+                  <span className="number-block">{currentTimeObj.millis}</span>
+                </div>
               </span>
             </div>
           </DialogHeader>
@@ -268,65 +290,65 @@ const TableOverview = ({ cases, refresh }: Props) => {
                 </Table>
 
                 <ScrollArea className="h-[320px]">
-                  {Object.entries(
-                    groupCasesByActivity(relatedCases) // Use relatedCases here
-                  ).map(([activity, cases]) => (
-                    <Collapsible key={activity} className="border-b-2">
-                      <CollapsibleTrigger className="flex justify-between items-center w-full p-4 hover:bg-gray-200 ">
-                        <span className="font-medium">{activity}</span>
-                        <ChevronDown />
-                      </CollapsibleTrigger>
-                      <CollapsibleContent className="py-2 px-2 bg-gray-100">
-                        <Table>
-                          <TableBody>
-                            {cases.map((caseItem) => (
-                              <TableRow key={caseItem.id}>
-                                <TableCell className="w-[30%] font-extrabold">
-                                  {caseItem.caseName}
-                                </TableCell>
-                                <TableCell className="w-[15%]">
-                                  {caseItem.startTime}
-                                </TableCell>
-                                <TableCell className="w-[15%]">
-                                  {caseItem.endTime}
-                                </TableCell>
-                                <TableCell className="w-[15%]">
-                                  {caseItem.totalTime}
-                                </TableCell>
-                                <TableCell className="w-[20%]">
-                                  {caseItem.activity}
-                                </TableCell>
-                                <TableCell className="w-[5%]">
-                                  <DropdownMenu>
-                                    <DropdownMenuTrigger asChild>
-                                      <Ellipsis className="cursor-pointer" />
-                                    </DropdownMenuTrigger>
-                                    <DropdownMenuContent>
-                                      <DropdownMenuItem
-                                        onClick={() =>
-                                          handleEditSession(caseItem)
-                                        }
-                                      >
-                                        Edit
-                                      </DropdownMenuItem>
-                                      <DropdownMenuItem
-                                        className="text-red-500"
-                                        onClick={() =>
-                                          handleOpenDeleteDialog(caseItem)
-                                        }
-                                      >
-                                        Delete
-                                      </DropdownMenuItem>
-                                    </DropdownMenuContent>
-                                  </DropdownMenu>
-                                </TableCell>
-                              </TableRow>
-                            ))}
-                          </TableBody>
-                        </Table>
-                      </CollapsibleContent>
-                    </Collapsible>
-                  ))}
+                  {Object.entries(groupCasesByActivity(relatedCases)).map(
+                    ([activity, cases]) => (
+                      <Collapsible key={activity} className="border-b-2">
+                        <CollapsibleTrigger className="flex justify-between items-center w-full p-4 hover:bg-gray-200 ">
+                          <span className="font-medium">{activity}</span>
+                          <ChevronDown />
+                        </CollapsibleTrigger>
+                        <CollapsibleContent className="py-2 px-2 bg-gray-100">
+                          <Table>
+                            <TableBody>
+                              {cases.map((caseItem) => (
+                                <TableRow key={caseItem.id}>
+                                  <TableCell className="w-[30%] font-extrabold">
+                                    {caseItem.caseName}
+                                  </TableCell>
+                                  <TableCell className="w-[15%]">
+                                    {caseItem.startTime}
+                                  </TableCell>
+                                  <TableCell className="w-[15%]">
+                                    {caseItem.endTime}
+                                  </TableCell>
+                                  <TableCell className="w-[15%]">
+                                    {caseItem.totalTime}
+                                  </TableCell>
+                                  <TableCell className="w-[20%]">
+                                    {caseItem.activity}
+                                  </TableCell>
+                                  <TableCell className="w-[5%]">
+                                    <DropdownMenu>
+                                      <DropdownMenuTrigger asChild>
+                                        <Ellipsis className="cursor-pointer" />
+                                      </DropdownMenuTrigger>
+                                      <DropdownMenuContent>
+                                        <DropdownMenuItem
+                                          onClick={() =>
+                                            handleEditSession(caseItem)
+                                          }
+                                        >
+                                          Edit
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem
+                                          className="text-red-500"
+                                          onClick={() =>
+                                            handleOpenDeleteDialog(caseItem)
+                                          }
+                                        >
+                                          Delete
+                                        </DropdownMenuItem>
+                                      </DropdownMenuContent>
+                                    </DropdownMenu>
+                                  </TableCell>
+                                </TableRow>
+                              ))}
+                            </TableBody>
+                          </Table>
+                        </CollapsibleContent>
+                      </Collapsible>
+                    )
+                  )}
                 </ScrollArea>
               </div>
             </CardContent>

@@ -5,12 +5,7 @@ import { Case } from "./pages/Home";
 
 interface Props {
   currentCase: Case | null | undefined;
-  currentTime: {
-    hours: string;
-    minutes: string;
-    seconds: string;
-    millis: string;
-  };
+  currentTime: number;
   onStart: () => void;
   onStop: () => void;
   onReset: () => void;
@@ -18,6 +13,18 @@ interface Props {
 
 function ActionOverview({ currentCase, currentTime, onStart, onStop }: Props) {
   const isActive = Boolean(currentCase);
+  const currentTimeObj = {
+    hours: Math.floor(currentTime / 3600000)
+      .toString()
+      .padStart(2, "0"),
+    minutes: Math.floor((currentTime % 3600000) / 60000)
+      .toString()
+      .padStart(2, "0"),
+    seconds: Math.floor((currentTime % 60000) / 1000)
+      .toString()
+      .padStart(2, "0"),
+    millis: (currentTime % 1000).toString().padStart(3, "0"),
+  };
 
   return (
     <Card className="flex flex-col p-4 h-full bg-content border-border border-2 rounded-2xl w-auto">
@@ -31,13 +38,13 @@ function ActionOverview({ currentCase, currentTime, onStart, onStop }: Props) {
         )}
         {isActive ? (
           <div className="text-foreground text-4xl font-extrabold max-w-[100%] flex gap-1">
-            <span className="number-block">{currentTime.hours}</span>
+            <span className="number-block">{currentTimeObj.hours}</span>
             <span>:</span>
-            <span className="number-block">{currentTime.minutes}</span>
+            <span className="number-block">{currentTimeObj.minutes}</span>
             <span>:</span>
-            <span className="number-block">{currentTime.seconds}</span>
+            <span className="number-block">{currentTimeObj.seconds}</span>
             <span>:</span>
-            <span className="number-block">{currentTime.millis}</span>
+            <span className="number-block">{currentTimeObj.millis}</span>
           </div>
         ) : (
           <div className="text-gray-500 opacity-50 text-4xl font-extrabold max-w-[100%] flex gap-1">

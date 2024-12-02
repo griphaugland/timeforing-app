@@ -146,7 +146,11 @@ export default function HomePage() {
           </div>
         </PageSlots.Top>
         <PageSlots.Left>
-          <TableOverview cases={allCases} refresh={refreshCases} />
+          <TableOverview
+            cases={allCases}
+            refresh={refreshCases}
+            currentTime={currentTime}
+          />
         </PageSlots.Left>
         <PageSlots.Right>
           <ActionOverview
@@ -154,18 +158,7 @@ export default function HomePage() {
             onStop={onStop}
             onReset={onReset}
             currentCase={currentCase}
-            currentTime={{
-              hours: Math.floor(currentTime / 3600000)
-                .toString()
-                .padStart(2, "0"),
-              minutes: Math.floor((currentTime % 3600000) / 60000)
-                .toString()
-                .padStart(2, "0"),
-              seconds: Math.floor((currentTime % 60000) / 1000)
-                .toString()
-                .padStart(2, "0"),
-              millis: (currentTime % 1000).toString().padStart(3, "0"),
-            }}
+            currentTime={currentTime}
           />
         </PageSlots.Right>
         <PageSlots.Bottom>
