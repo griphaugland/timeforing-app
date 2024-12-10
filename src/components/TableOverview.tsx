@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent } from "./ui/card";
 import { ScrollArea } from "./ui/scroll-area";
 import {
@@ -30,6 +30,8 @@ import { Input } from "./ui/input";
 interface Props {
   cases: Case[];
   refresh: () => void;
+  currentTime: number;
+  isTimerRunning: boolean;
 }
 
 const formatTextToShowDotsWithTextOnHover = (text: string) => {
@@ -42,15 +44,21 @@ const formatTextToShowDotsWithTextOnHover = (text: string) => {
   );
 };
 
-const TableOverview = ({ cases, refresh }: Props) => {
+const TableOverview = ({
+  cases,
+  refresh,
+  currentTime,
+  isTimerRunning,
+}: Props) => {
   const minimumRows = 8;
   const emptyRows = Math.max(0, minimumRows - cases.length);
   const { deleteCase, editCase, calculateTotalTime } = useDailyEntries(cases);
+  const [formattedTime, setFormattedTime] = useState("00:00:00:000");
+
   const [relatedCases, setRelatedCases] = useState<Case[]>([]);
   const [detailsDialogOpen, setDetailsDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [caseToDelete, setCaseToDelete] = useState<Case | null>(null);
-
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [caseToEdit, setCaseToEdit] = useState<Case | null>(null);
 
@@ -76,11 +84,11 @@ const TableOverview = ({ cases, refresh }: Props) => {
     return hours * 3600 + minutes * 60 + seconds;
   };
 
-  // Converts total seconds to HH:mm:ss format
   const secondsToTime = (totalSeconds: number) => {
-    const hours = Math.floor(totalSeconds / 3600);
-    const minutes = Math.floor((totalSeconds % 3600) / 60);
-    const seconds = totalSeconds % 60;
+    const roundedSeconds = Math.floor(totalSeconds); // Round to the nearest integer
+    const hours = Math.floor(roundedSeconds / 3600);
+    const minutes = Math.floor((roundedSeconds % 3600) / 60);
+    const seconds = roundedSeconds % 60;
 
     return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(
       2,
@@ -88,14 +96,33 @@ const TableOverview = ({ cases, refresh }: Props) => {
     )}:${String(seconds).padStart(2, "0")}`;
   };
 
-  // Calculate the total time for all cases with the same caseName
-  const calculateTotalTimeForCaseName = (caseName: string, cases: Case[]) => {
-    const totalSeconds = cases
-      .filter((caseItem) => caseItem.caseName === caseName)
-      .reduce((acc, caseItem) => acc + timeToSeconds(caseItem.totalTime), 0);
+  useEffect(() => {
+    const calculateTotalTimeForCaseName = (caseName: string, cases: Case[]) => {
+      const totalSecondsWithSameCaseName = cases
+        .filter((caseItem) => caseItem.caseName === caseName)
+        .reduce((acc, caseItem) => {
+          if (caseItem.totalTime !== "--:--") {
+            acc += timeToSeconds(caseItem.totalTime);
+          }
+          return acc;
+        }, 0);
 
-    return secondsToTime(totalSeconds);
-  };
+      const currentElapsed =
+        relatedCases[0]?.caseName === caseName && isTimerRunning
+          ? currentTime / 1000
+          : 0;
+
+      return totalSecondsWithSameCaseName + currentElapsed;
+    };
+
+    if (relatedCases.length > 0) {
+      const calculatedTime = calculateTotalTimeForCaseName(
+        relatedCases[0].caseName,
+        relatedCases
+      );
+      setFormattedTime(secondsToTime(calculatedTime));
+    }
+  }, [relatedCases, currentTime, isTimerRunning]);
 
   const handleSaveEdit = () => {
     if (caseToEdit) {
@@ -122,7 +149,7 @@ const TableOverview = ({ cases, refresh }: Props) => {
     setCaseToDelete(caseItem);
     setDeleteDialogOpen(true);
   };
-
+  // Adjusted handleCaseClick to populate relatedCases dynamically
   const handleCaseClick = (caseName: string) => {
     const filteredCases = cases.filter(
       (caseItem) => caseItem.caseName === caseName
@@ -231,12 +258,7 @@ const TableOverview = ({ cases, refresh }: Props) => {
             </DialogTitle>
             <div className="mt-2 text-2xl flex justify-between">
               <p>Total time spent on this case: </p>
-              <span className="font-bold">
-                {calculateTotalTimeForCaseName(
-                  relatedCases[0]?.caseName,
-                  relatedCases
-                )}
-              </span>
+              <span className="font-bold">{formattedTime}</span>
             </div>
           </DialogHeader>
           <Card className="w-full bg-content border-none rounded-2xl">
