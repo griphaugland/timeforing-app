@@ -51,6 +51,8 @@ export default function PreviousEntries() {
           <TableOverview
             cases={dateCases}
             refresh={() => console.log("Deleted successfully")}
+            currentTime={0}
+            isTimerRunning={false}
           />
         </PageSlots.Left>
         <PageSlots.Right>
