@@ -150,6 +150,7 @@ export default function HomePage() {
             cases={allCases}
             refresh={refreshCases}
             currentTime={currentTime}
+            currentCase={currentCase}
             isTimerRunning={currentState === "START"}
           />
         </PageSlots.Left>
