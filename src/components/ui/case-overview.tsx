@@ -154,10 +154,7 @@ function CaseOverviewDialog(props: CaseOverviewDialogProps) {
                 ).map(([activity, cases]) => (
                   <Collapsible key={activity} className="border-b-2">
                     <CollapsibleTrigger className="flex justify-between items-center w-full p-4 hover:bg-gray-200 ">
-                      <span className="font-bold text-xs">
-                        {" "}
-                        Activity {activity}
-                      </span>
+                      <span className="font-bold text-xs">{activity}</span>
                       <ChevronDown />
                     </CollapsibleTrigger>
                     <CollapsibleContent className="py-2 px-2 bg-gray-100">
