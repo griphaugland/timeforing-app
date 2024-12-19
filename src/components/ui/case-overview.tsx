@@ -123,42 +123,43 @@ function CaseOverviewDialog(props: CaseOverviewDialogProps) {
         <Card className="w-full bg-content border-none rounded-2xl">
           <CardContent className="p-0">
             <div className="relative w-full">
-              <Table className="">
-                <TableHeader className="sticky top-0 z-10">
-                  <TableRow>
-                    <TableHead className="w-[30%] font-extrabold">
-                      Case
-                    </TableHead>
-                    <TableHead className="w-[15%] font-extrabold">
-                      Start
-                    </TableHead>
-                    <TableHead className="w-[15%] font-extrabold">
-                      End
-                    </TableHead>
-                    <TableHead className="w-[15%] font-extrabold">
-                      Time
-                    </TableHead>
-                    <TableHead className="w-[20%] font-extrabold">
-                      Activity
-                    </TableHead>
-                    <TableHead className="w-[5%] font-extrabold">
-                      Edit
-                    </TableHead>
-                  </TableRow>
-                </TableHeader>
-              </Table>
-
+              <p className="mb-2">Activities:</p>
               <ScrollArea className="h-[320px]">
                 {Object.entries(
                   groupCasesByActivity(relatedCases) // Use relatedCases here
                 ).map(([activity, cases]) => (
-                  <Collapsible key={activity} className="border-b-2">
+                  <Collapsible
+                    key={activity}
+                    className="border-2 rounded-lg mb-1"
+                  >
                     <CollapsibleTrigger className="flex justify-between items-center w-full p-4 hover:bg-gray-200 ">
-                      <span className="font-bold text-xs">{activity}</span>
+                      <span className="font-bold text-sm">{activity}</span>
                       <ChevronDown />
                     </CollapsibleTrigger>
                     <CollapsibleContent className="py-2 px-2 bg-gray-100">
                       <Table>
+                        <TableHeader className="sticky top-0 z-10">
+                          <TableRow>
+                            <TableHead className="w-[30%] font-extrabold">
+                              Case
+                            </TableHead>
+                            <TableHead className="w-[15%] font-extrabold">
+                              Start
+                            </TableHead>
+                            <TableHead className="w-[15%] font-extrabold">
+                              End
+                            </TableHead>
+                            <TableHead className="w-[15%] font-extrabold">
+                              Time
+                            </TableHead>
+                            <TableHead className="w-[20%] font-extrabold">
+                              Activity
+                            </TableHead>
+                            <TableHead className="w-[5%] font-extrabold">
+                              Edit
+                            </TableHead>
+                          </TableRow>
+                        </TableHeader>
                         <TableBody>
                           {cases.map((caseItem) => (
                             <TableRow key={caseItem.id}>
